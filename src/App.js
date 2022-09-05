@@ -1,24 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import WebCam from "./components/webcam";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="h-100 d-flex flex-column">
+        <nav className="navbar navbar-expand navbar-brand">
+          <ul className="navbar-nav">
+            <li>
+              <Link className="nav-link" to="/">Home</Link>
+            </li>
+            <li>
+              <Link className="nav-link" to="/webcam">Webcam</Link>
+            </li>
+            <li>
+              <Link className="nav-link" to="/video-streaming">Video Streaming</Link>
+            </li>
+          </ul>
+        </nav>
+
+        <Routes>
+          <Route path="/" element={
+            <div className="flex-grow-1 d-flex justify-content-center align-items-center p-3 display-1">
+              Video streaming demo
+          </div>
+          }>
+          </Route>
+          <Route path="/webcam" element={<WebCam mode='live' />} />
+          <Route path="/video-streaming" element={<WebCam mode='video'/>} />
+
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
