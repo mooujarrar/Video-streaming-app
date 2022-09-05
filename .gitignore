@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/streaming-server/node_modules
+/streaming-server/assets
 /.pnp
 .pnp.js
 
