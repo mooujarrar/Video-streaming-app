@@ -1,6 +1,8 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import WebCam from "./components/webcam";
+import VideoStreaming from "./components/videostream";
+import WebCam2 from "./components/webcam2";
 
 function App() {
   return (
@@ -27,8 +29,8 @@ function App() {
           </div>
           }>
           </Route>
-          <Route path="/webcam" element={<WebCam mode='live' />} />
-          <Route path="/video-streaming" element={<WebCam mode='video'/>} />
+          <Route path="/webcam" element={<WebCam2 />} />
+          <Route path="/video-streaming" element={<VideoStreaming />} />
 
         </Routes>
       </div>
