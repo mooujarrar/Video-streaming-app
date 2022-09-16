@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { Button, FloatingLabel, Form } from 'react-bootstrap';
 import axios from 'axios';
+import ReactPlayer from 'react-player';
 
 function WebCam2() {
   const [videoSources, setVideoSources] = useState([]);
   const [audioSources, setAudioSources] = useState([]);
   const [validated, setValidated] = useState(false);
+  const [connected, setConnected] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -16,7 +18,8 @@ function WebCam2() {
     const post = { videoSource: form.videoSource.value, audioSource: form.audioSource.value };
     try {
       const res = await axios.post('http://localhost:5000/live', post);
-      console.log(res.data);
+      console.log("here", true);
+      setConnected(true);
     } catch (e) {
       alert(e)
     }
@@ -31,11 +34,13 @@ function WebCam2() {
     const getSources = async () => {
       const res = await axios('http://localhost:5000/live');
       if (res.data) {
+        console.log("here");
         setVideoSources(res.data.video ?? []);
         setAudioSources(res.data.audio ?? []);
       }
     };
     getSources();
+    return async () => await axios('http://localhost:5000/stopStream');
   }, []);
 
   return (
@@ -73,7 +78,8 @@ function WebCam2() {
         <h1 className="h3 text-success">
           Mode: <i className="bi bi-webcam"></i>
         </h1>
-        <video src="http://localhost:1234" width="1080" controls></video>    
+        {connected ? 
+        <ReactPlayer url="http://localhost:5000/index.m3u8" playing={true} controls={true}/> : ""}
       </div>
     </div>
   );
