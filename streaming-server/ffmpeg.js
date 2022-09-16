@@ -1,10 +1,14 @@
 const spawn = require('child_process').spawn;
 const exec = require('child_process').exec;
+const findRemoveSync = require('find-remove');
+const fs = require("fs");
+const shell = require('shelljs')
 
 const ffmpeg = {
 
 	camera: "",
 	audio: "",
+	stream: undefined,
 
     //Make sure to set the camera and audio target devices prior to calling this function. See
     //devicesList() to get the device strings you'll need.
@@ -27,7 +31,7 @@ const ffmpeg = {
 		if(!opts.output) opts.output = "out.mkv";
 		console.log('ffmpeg -t ' + opts.duration + '-f dshow  -i video="' + this.camera + '":audio="' + this.audio + '" ' + opts.output);
 		var ffmpegRecord = exec('ffmpeg -t ' + opts.duration + ' -f dshow -video_size 1280x720 -rtbufsize 702000k -i video="' + this.camera + '":audio="' + this.audio + '" ' + opts.output);
-		
+
 		// ffmpegRecord.stdout.on("data", data =>{
 		// 	console.log(">> ", data.toString());
 		// });
@@ -105,15 +109,32 @@ const ffmpeg = {
 	},
 
 	streamVideo: function(cb){
-		
-		console.log('ffmpeg -f dshow -i video="' + this.camera + '":audio="' + this.audio + '" -profile:v high -pix_fmt yuvj420p -level:v 4.1 -preset ultrafast -tune zerolatency -vcodec libx264 -r 10 -b:v 512k -s 640x360 -acodec aac -ac 2 -ab 32k -ar 44100 -f mpegts -flush_packets 0 udp://192.168.1.4:5000?pkt_size=1316');
-		var ffmpegStream = exec('ffmpeg -f dshow -i video="' + this.camera + '":audio="' + this.audio + '" -profile:v high -pix_fmt yuvj420p -level:v 4.1 -preset ultrafast -tune zerolatency -vcodec libx264 -r 10 -b:v 512k -s 640x360 -acodec aac -ac 2 -ab 32k -ar 44100 -f mpegts -flush_packets 0 http://localhost:5040?pkt_size=1316');
-	
-
-		ffmpegStream.on("close", code =>{
-			if(cb) cb();
-		});
+		console.log("stream", this.stream)
+		if(this.stream === undefined) {
+			console.log('ffmpeg -f dshow -i video="' + this.camera + '":audio="' + this.audio + '" -c:v libx264 -crf 21 -preset veryfast -g 2 -sc_threshold 0 -c:a aac -b:a 128k -ac 2 -f hls -hls_time 4 -hls_playlist_type event -hls_segment_filename streaming-server/HLS/s%06d.ts streaming-server/HLS/index.m3u8'); //'sh ./streaming-server/streamer.sh hls'
+			this.stream = exec('ffmpeg -f dshow -i video="' + this.camera + '":audio="' + this.audio + '" -c:v libx264 -crf 21 -preset veryfast -g 2 -sc_threshold 0 -c:a aac -b:a 128k -ac 2 -lhls 1 -f hls -hls_time 4 -hls_playlist_type event -hls_segment_filename streaming-server/HLS/s%06d.ts streaming-server/HLS/index.m3u8', {detached: true}); //'sh ./streaming-server/streamer.sh hls'
+			// File remover
+			setInterval(() => {
+				findRemoveSync('streaming-server/HLS/', { age: { seconds: 30 }, extensions: '.ts' });
+			}, 5000);
+		}
 	},
+
+	stopStream: function() {
+		this.camera = "";
+		this.audio = "";
+		findRemoveSync('streaming-server/HLS/', { extensions: [".ts", ".m3u8"]});
+		console.log("*** stop stream");
+		if(this.stream !== undefined) 
+		{
+			console.log("kill process")
+			console.log(this.stream.pid);
+			process.kill(this.stream.pid);
+		}
+		this.stream = undefined;
+		console.log(this.stream);
+
+	}
 
 }
 
