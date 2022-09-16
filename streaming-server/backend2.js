@@ -2,20 +2,20 @@ const express = require("express");
 const fs = require("fs");
 const ffmpeg = require("./ffmpeg");
 const cors = require('cors');
-var bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
+const findRemoveSync = require('find-remove');
 
 const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/stream', express.static(__dirname));
+app.use('/', express.static(__dirname + '/HLS/'));
 
  
 const PORT = process.env.PORT || 5000;
+const STREAMING_ARTIFACTS_PATH = './streaming-server';
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + "/index.html")
-})
- 
 app.get("/video", (req, res) => {
   const range = req.headers.range;
   const videoPath = "./assets/Media1.mp4";
@@ -48,9 +48,50 @@ app.get("/live", (req, res) => {
 app.post("/live", (req, res) => {
   ffmpeg.camera = req.body.videoSource
   ffmpeg.audio = req.body.audioSource
-  ffmpeg.streamVideo(() => {
-    console.log("Done");
+  res.send("Done");
+});
+
+app.get("/stopStream", (req, res) => {
+  ffmpeg.stopStream();
+  res.send("Done");
+});
+
+app.get("/stream/:streamFile", (req, res) => {
+  var filePath = STREAMING_ARTIFACTS_PATH + req.params.streamFile +".m3u8";
+  console.log(filePath);
+  // File remover
+  setInterval(() => {
+    console.log("removed files are : ", findRemoveSync(STREAMING_ARTIFACTS_PATH + '/HLS/', { age: { seconds: 30 }, extensions: '.ts' }));
+  }, 5000);
+  //Read and send back
+  fs.readFile(filePath, function (error, content) {
+    res.writeHead(200, { 'Access-Control-Allow-Origin': '*' });
+    if (error) {
+      console.log("error");
+        if (error.code === 'ENOENT') {
+            fs.readFile('./404.html', function (error, content) {
+              res.end(content, 'utf-8');
+            });
+        }
+        else {
+          res.writeHead(500);
+          res.end('Sorry, check with the site admin for error: ' + error.code + ' ..\n');
+          res.end();
+        }
+    }
+    else {
+      res.end(content, 'utf-8');
+    }
   });
+})
+
+
+app.get("/index.m3u8", (req, res) => {
+  console.log("heyoo");
+  if(ffmpeg.camera !== "" && ffmpeg.audio !== "") {
+    ffmpeg.streamVideo();
+  }
+  res.send("Done");
 });
 
 app.listen(PORT, () => console.log(`Streaming server is launched under port ${PORT}`));
