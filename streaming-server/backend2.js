@@ -59,10 +59,6 @@ app.get("/stopStream", (req, res) => {
 app.get("/stream/:streamFile", (req, res) => {
   var filePath = STREAMING_ARTIFACTS_PATH + req.params.streamFile +".m3u8";
   console.log(filePath);
-  // File remover
-  setInterval(() => {
-    console.log("removed files are : ", findRemoveSync(STREAMING_ARTIFACTS_PATH + '/HLS/', { age: { seconds: 30 }, extensions: '.ts' }));
-  }, 5000);
   //Read and send back
   fs.readFile(filePath, function (error, content) {
     res.writeHead(200, { 'Access-Control-Allow-Origin': '*' });

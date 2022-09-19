@@ -111,29 +111,14 @@ const ffmpeg = {
 	streamVideo: function(cb){
 		console.log("stream", this.stream)
 		if(this.stream === undefined) {
-			console.log('ffmpeg -f dshow -i video="' + this.camera + '":audio="' + this.audio + '" -c:v libx264 -crf 21 -preset veryfast -g 2 -sc_threshold 0 -c:a aac -b:a 128k -ac 2 -f hls -hls_time 4 -hls_playlist_type event -hls_segment_filename streaming-server/HLS/s%06d.ts streaming-server/HLS/index.m3u8'); //'sh ./streaming-server/streamer.sh hls'
-			this.stream = exec('ffmpeg -f dshow -i video="' + this.camera + '":audio="' + this.audio + '" -c:v libx264 -crf 21 -preset veryfast -g 2 -sc_threshold 0 -c:a aac -b:a 128k -ac 2 -lhls 1 -f hls -hls_time 4 -hls_playlist_type event -hls_segment_filename streaming-server/HLS/s%06d.ts streaming-server/HLS/index.m3u8', {detached: true}); //'sh ./streaming-server/streamer.sh hls'
-			// File remover
-			setInterval(() => {
-				findRemoveSync('streaming-server/HLS/', { age: { seconds: 30 }, extensions: '.ts' });
-			}, 5000);
+			console.log('ffmpeg -f dshow -i video="' + this.camera + '":audio="' + this.audio + '" -c:v libx264 -crf 21 -preset veryfast -g 2 -sc_threshold 0 -c:a aac -b:a 128k -ac 2 -f hls -hls_time 4 -hls_list_size 10 -hls_segment_filename streaming-server/HLS/s%06d.ts streaming-server/HLS/index.m3u8'); //'sh ./streaming-server/streamer.sh hls'
+			this.stream = exec('ffmpeg -f dshow -i video="' + this.camera + '":audio="' + this.audio + '" -c:v libx264 -crf 21 -preset veryfast -g 2 -sc_threshold 0 -c:a aac -b:a 128k -ac 2 -lhls 1 -f hls -hls_time 4 -hls_list_size 10 -hls_delete_threshold 3 -hls_flags delete_segments -hls_segment_filename streaming-server/HLS/s%06d.ts streaming-server/HLS/index.m3u8', {detached: true}); //'sh ./streaming-server/streamer.sh hls'
 		}
 	},
 
 	stopStream: function() {
 		this.camera = "";
 		this.audio = "";
-		findRemoveSync('streaming-server/HLS/', { extensions: [".ts", ".m3u8"]});
-		console.log("*** stop stream");
-		if(this.stream !== undefined) 
-		{
-			console.log("kill process")
-			console.log(this.stream.pid);
-			process.kill(this.stream.pid);
-		}
-		this.stream = undefined;
-		console.log(this.stream);
-
 	}
 
 }
