@@ -6,7 +6,8 @@
   "scripts": {
     "backend1": "node backend1.js",
     "backend2": "node backend2.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "npm i opencv-build && npm i opencv4nodejs"
   },
   "author": "",
   "license": "ISC",
