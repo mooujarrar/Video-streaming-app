@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import WebCam from "./components/webcam";
 import VideoStreaming from "./components/videostream";
 import WebCam2 from "./components/webcam2";
+import GStreamer from "./components/g-streamer";
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
             <li>
               <Link className="nav-link" to="/video-streaming">Video Streaming</Link>
             </li>
+            <li>
+              <Link className="nav-link" to="/g-streamer">GStreamer</Link>
+            </li>
           </ul>
         </nav>
 
@@ -31,6 +35,7 @@ function App() {
           </Route>
           <Route path="/webcam" element={<WebCam2 />} />
           <Route path="/video-streaming" element={<VideoStreaming />} />
+          <Route path="/g-streamer" element={<GStreamer />} />
 
         </Routes>
       </div>
